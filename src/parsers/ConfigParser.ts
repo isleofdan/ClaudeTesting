@@ -75,7 +75,7 @@ export class ConfigParser {
           }
           break;
         default:
-          throw new Error(`Unknown trigger type: ${trigger.type}`);
+          throw new Error(`Unknown trigger type: ${(trigger as any).type}`);
       }
     }
   }
