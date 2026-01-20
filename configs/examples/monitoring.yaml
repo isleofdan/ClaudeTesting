@@ -1,0 +1,70 @@
+# Monitoring & Maintenance Example: System health checks and backups
+
+skills:
+  health_check:
+    command: ./scripts/health-check.sh
+    description: Check system health
+
+  disk_usage:
+    command: df
+    args: ["-h"]
+    description: Check disk usage
+
+  memory_usage:
+    command: free
+    args: ["-h"]
+    description: Check memory usage
+
+  process_list:
+    command: ps
+    args: ["aux", "|", "head", "-20"]
+    description: Show running processes
+
+  database_backup:
+    command: ./scripts/backup-database.sh
+    description: Backup database
+
+  log_rotation:
+    command: ./scripts/rotate-logs.sh
+    description: Rotate application logs
+
+  cleanup_temp:
+    command: find
+    args: ["/tmp", "-type", "f", "-mtime", "+7", "-delete"]
+    description: Clean old temp files
+
+triggers:
+  # Health check every 5 minutes
+  - type: schedule
+    cron: "*/5 * * * *"
+    skills: [health_check]
+
+  # System stats every hour
+  - type: schedule
+    cron: "0 * * * *"
+    skills: [disk_usage, memory_usage]
+
+  # Daily database backup at 3 AM
+  - type: schedule
+    cron: "0 3 * * *"
+    skills: [database_backup]
+
+  # Weekly log rotation on Sundays at 1 AM
+  - type: schedule
+    cron: "0 1 * * 0"
+    skills: [log_rotation]
+
+  # Weekly temp cleanup on Sundays at 4 AM
+  - type: schedule
+    cron: "0 4 * * 0"
+    skills: [cleanup_temp]
+
+  # Manual health check via webhook
+  - type: webhook
+    path: /health
+    method: GET
+    skills: [health_check, disk_usage, memory_usage, process_list]
+
+settings:
+  webhookPort: 3001
+  logLevel: info

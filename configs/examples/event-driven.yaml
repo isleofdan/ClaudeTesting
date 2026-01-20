@@ -1,0 +1,63 @@
+# Event-Driven Example: Custom event bus triggers
+
+skills:
+  send_welcome_email:
+    command: node
+    args: ["./scripts/send-email.js", "--template=welcome"]
+    description: Send welcome email to new user
+
+  create_user_directory:
+    command: mkdir
+    args: ["-p", "./users/${USER_ID}"]
+    description: Create user workspace
+
+  log_event:
+    command: echo
+    args: ["Event logged at $(date)"]
+    description: Log event occurrence
+
+  process_payment:
+    command: node
+    args: ["./scripts/process-payment.js"]
+    description: Process payment
+
+  send_receipt:
+    command: node
+    args: ["./scripts/send-receipt.js"]
+    description: Send payment receipt
+
+  update_analytics:
+    command: node
+    args: ["./scripts/update-analytics.js"]
+    description: Update analytics database
+
+triggers:
+  # User lifecycle events
+  - type: event
+    eventName: user.created
+    skills: [send_welcome_email, create_user_directory, log_event]
+
+  - type: event
+    eventName: user.deleted
+    skills: [log_event]
+
+  # Payment events
+  - type: event
+    eventName: payment.received
+    skills: [process_payment, send_receipt, update_analytics]
+
+  - type: event
+    eventName: payment.failed
+    skills: [log_event]
+
+  # System events
+  - type: event
+    eventName: system.started
+    skills: [log_event]
+
+  - type: event
+    eventName: system.error
+    skills: [log_event]
+
+settings:
+  logLevel: debug

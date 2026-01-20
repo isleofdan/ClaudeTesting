@@ -1,0 +1,48 @@
+# Development Workflow Example: Auto-build and test on file changes
+
+skills:
+  lint:
+    command: npm
+    args: ["run", "lint"]
+    description: Run code linter
+
+  typecheck:
+    command: npm
+    args: ["run", "typecheck"]
+    description: Run TypeScript type checking
+
+  test:
+    command: npm
+    args: ["run", "test"]
+    description: Run test suite
+
+  build:
+    command: npm
+    args: ["run", "build"]
+    description: Build project
+
+  format:
+    command: npm
+    args: ["run", "format"]
+    description: Format code
+
+triggers:
+  # Auto-format when source files change
+  - type: filesystem
+    watch: "./src/**/*.ts"
+    events: [change]
+    skills: [format, lint]
+
+  # Run tests when test files change
+  - type: filesystem
+    watch: "./src/**/*.test.ts"
+    events: [add, change]
+    skills: [test]
+
+  # Full build and test every hour during dev hours
+  - type: schedule
+    cron: "0 9-18 * * 1-5"
+    skills: [lint, typecheck, test, build]
+
+settings:
+  logLevel: debug
