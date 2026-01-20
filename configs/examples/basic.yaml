@@ -1,0 +1,26 @@
+# Basic Example: Simple scheduled tasks
+
+skills:
+  greeting:
+    command: echo
+    args: ["Good morning! Time to start working."]
+    description: Morning greeting
+
+  reminder:
+    command: echo
+    args: ["Don't forget to take a break!"]
+    description: Break reminder
+
+triggers:
+  # Morning greeting at 9 AM on weekdays
+  - type: schedule
+    cron: "0 9 * * 1-5"
+    skills: [greeting]
+
+  # Hourly reminder during work hours
+  - type: schedule
+    cron: "0 9-17 * * 1-5"
+    skills: [reminder]
+
+settings:
+  logLevel: info

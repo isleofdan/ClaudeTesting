@@ -1,0 +1,16 @@
+# Quick Test Configuration - Runs every minute
+
+skills:
+  test_message:
+    command: echo
+    args: ["✅ Scheduler is working! Time:", "$(date +%H:%M:%S)"]
+    description: Test message every minute
+
+triggers:
+  # Run every minute for testing
+  - type: schedule
+    cron: "* * * * *"
+    skills: [test_message]
+
+settings:
+  logLevel: info

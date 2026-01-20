@@ -1,0 +1,85 @@
+# Skill Automation Scheduler Configuration
+# This is the main configuration file for the scheduler
+
+# Define your skills (commands to execute)
+skills:
+  hello:
+    command: echo
+    args: ["Hello from scheduled task!"]
+    description: Simple hello world skill
+
+  build:
+    command: npm
+    args: ["run", "build"]
+    description: Build the project
+
+  test:
+    command: npm
+    args: ["test"]
+    description: Run tests
+
+  deploy:
+    command: ./deploy.sh
+    description: Deploy application
+
+  backup:
+    command: tar
+    args: ["-czf", "/backups/backup-$(date +%Y%m%d).tar.gz", "./data"]
+    description: Create backup archive
+
+# Define triggers for your skills
+triggers:
+  # Schedule-based triggers (cron syntax)
+  - type: schedule
+    cron: "*/5 * * * *"  # Every 5 minutes
+    skills: [hello]
+    enabled: true
+
+  - type: schedule
+    cron: "0 2 * * *"  # Daily at 2 AM
+    skills: [backup]
+    enabled: true
+
+  # File system event triggers
+  - type: filesystem
+    watch: "./src"
+    events: [change]
+    skills: [build, test]
+    enabled: true
+
+  - type: filesystem
+    watch: ["./config", "./data"]
+    events: [add, change]
+    skills: [backup]
+    enabled: false
+
+  # HTTP webhook triggers
+  - type: webhook
+    path: /deploy
+    method: POST
+    secret: "your-secret-key-here"
+    skills: [test, build, deploy]
+    enabled: true
+
+  - type: webhook
+    path: /build
+    method: POST
+    skills: [build]
+    enabled: true
+
+  # Custom event triggers
+  - type: event
+    eventName: user.signup
+    skills: [hello]
+    enabled: true
+
+  - type: event
+    eventName: deployment.success
+    skills: [backup]
+    enabled: true
+
+# Global settings
+settings:
+  webhookPort: 3000
+  webhookHost: localhost
+  logLevel: info

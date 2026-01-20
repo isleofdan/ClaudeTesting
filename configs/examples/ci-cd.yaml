@@ -1,0 +1,61 @@
+# CI/CD Pipeline Example: Webhook-triggered deployments
+
+skills:
+  install:
+    command: npm
+    args: ["ci"]
+    description: Install dependencies
+
+  test:
+    command: npm
+    args: ["test"]
+    description: Run test suite
+
+  build:
+    command: npm
+    args: ["run", "build"]
+    description: Build for production
+
+  deploy_staging:
+    command: ./scripts/deploy-staging.sh
+    description: Deploy to staging environment
+
+  deploy_production:
+    command: ./scripts/deploy-production.sh
+    description: Deploy to production environment
+
+  notify_slack:
+    command: curl
+    args: ["-X", "POST", "-H", "Content-Type: application/json", "-d", '{"text":"Deployment completed"}', "${SLACK_WEBHOOK_URL}"]
+    description: Send Slack notification
+
+triggers:
+  # Deploy to staging on push to develop branch
+  - type: webhook
+    path: /webhook/deploy/staging
+    method: POST
+    secret: "${GITHUB_WEBHOOK_SECRET}"
+    skills: [install, test, build, deploy_staging, notify_slack]
+
+  # Deploy to production on push to main branch
+  - type: webhook
+    path: /webhook/deploy/production
+    method: POST
+    secret: "${GITHUB_WEBHOOK_SECRET}"
+    skills: [install, test, build, deploy_production, notify_slack]
+
+  # Manual build trigger
+  - type: webhook
+    path: /webhook/build
+    method: POST
+    skills: [install, build]
+
+  # Nightly production deployment
+  - type: schedule
+    cron: "0 2 * * *"
+    skills: [install, test, build, deploy_production]
+
+settings:
+  webhookPort: 8080
+  webhookHost: 0.0.0.0
+  logLevel: info
